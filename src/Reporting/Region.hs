@@ -10,7 +10,10 @@ data Region = Region
     { start :: Position
     , end :: Position
     }
-    deriving (Eq, Show)
+    deriving Eq
+
+instance Show Region where
+  show _ = ""
 
 
 data Position = Position

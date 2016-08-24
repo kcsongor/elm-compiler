@@ -32,6 +32,7 @@ reserveds =
     , "import", "exposing"
     , "as"
     , "port"
+    , "do", "yield"
     ]
 
 
@@ -134,6 +135,9 @@ rightArrow :: IParser String
 rightArrow =
   string "->" <?> "an arrow '->'"
 
+leftArrow :: IParser String
+leftArrow =
+  string "<-" <?> "an arrow '<-'"
 
 hasType :: IParser String
 hasType =

@@ -12,7 +12,7 @@ import qualified AST.Module.Name as ModuleName
 
 
 newtype Raw = Raw String
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 
@@ -23,7 +23,7 @@ data TopLevel = TopLevelVar
     { topHome :: ModuleName.Canonical
     , topName :: String
     }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 
@@ -35,14 +35,14 @@ data Home
     | Module ModuleName.Canonical
     | TopLevel ModuleName.Canonical
     | Local
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 data Canonical = Canonical
     { home :: !Home
     , name :: !String
     }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 local :: String -> Canonical
@@ -208,7 +208,7 @@ data Listing a = Listing
     { _explicits :: [a]
     , _open :: Bool
     }
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 openListing :: Listing a
@@ -231,7 +231,7 @@ data Value
     = Value !String
     | Alias !String
     | Union !String !(Listing String)
-    deriving (Eq, Ord)
+    deriving (Eq, Ord, Show)
 
 
 

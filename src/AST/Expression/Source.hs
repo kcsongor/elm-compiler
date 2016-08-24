@@ -28,4 +28,5 @@ type Def =
 data Def'
     = Definition Pattern.Raw Expr
     | Annotation String Type.Raw
+    deriving (Show)
 

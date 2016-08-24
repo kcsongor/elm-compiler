@@ -194,7 +194,7 @@ appExpr =
 
 expr :: IParser Source.Expr
 expr =
-  addLocation (choice [ letExpr, caseExpr, ifExpr ])
+  addLocation (choice [ letExpr, doExpr, caseExpr, ifExpr ])
     <|> lambdaExpr
     <|> binaryExpr
     <?> "an expression"
@@ -263,7 +263,26 @@ caseExpr =
           padded rightArrow
           (,) p <$> expr
 
+doExpr :: IParser Source.Expr'
+doExpr =
+  do  try (reserved "do")
+      whitespace
+      binds <-
+        Indent.block (bind <* whitespace)
+      let bs = foldl (.) id binds
+      whitespace
+      reserved "yield"
+      whitespace
+      e@(A.A _ e') <- bs <$> expr
+      return e'
 
+bind :: IParser (Source.Expr -> Source.Expr)
+bind =
+  Indent.withPos $
+    do  arg <- Pattern.term
+        padded leftArrow
+        body@(A.A ann _) <- expr
+        return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann $ E.rawVar ">>=") body) (A.A ann $ E.Lambda arg e))
 
 -- LET
 

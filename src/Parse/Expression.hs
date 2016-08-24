@@ -270,7 +270,7 @@ doExpr =
       let b = binder mod
       whitespace
       binds <-
-        Indent.block (((try (bind b)) <|> (bindThen b)) <* whitespace)
+        Indent.block (((try (bind b)) <|> (try (bindLet b)) <|> (bindThen b)) <* whitespace)
       let bs = foldl (.) id binds
       whitespace
       reserved "yield"
@@ -289,6 +289,16 @@ bind b =
         padded leftArrow
         body@(A.A ann _) <- expr
         return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann b) body) (A.A ann $ E.Lambda arg e))
+
+bindLet :: Source.Expr' -> IParser (Source.Expr -> Source.Expr)
+bindLet b =
+  Indent.withPos $
+    do  arg <- Pattern.term
+        padded equals
+        body@(A.A ann _) <- expr
+        return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann b) (A.A ann $ E.App (A.A ann $ E.rawVar "return") body)) (A.A ann $ E.Lambda arg e))
+        --return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann b) (A.A ann $ E.App (A.A ann $ E.rawVar "return") body)) (A.A ann $ E.Lambda arg e))
+
 
 bindThen :: Source.Expr' -> IParser (Source.Expr -> Source.Expr)
 bindThen b =

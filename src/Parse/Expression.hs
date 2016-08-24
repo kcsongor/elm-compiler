@@ -266,9 +266,11 @@ caseExpr =
 doExpr :: IParser Source.Expr'
 doExpr =
   do  try (reserved "do")
+      (E.Var (Var.Raw mod)) <- char '[' *> varTerm <* char ']'
+      let b = binder mod
       whitespace
       binds <-
-        Indent.block (bind <* whitespace)
+        Indent.block (((try (bind b)) <|> (bindThen b)) <* whitespace)
       let bs = foldl (.) id binds
       whitespace
       reserved "yield"
@@ -276,13 +278,24 @@ doExpr =
       e@(A.A _ e') <- bs <$> expr
       return e'
 
-bind :: IParser (Source.Expr -> Source.Expr)
-bind =
+binder :: String -> Source.Expr'
+binder mod =
+  E.rawVar (mod ++ ".>>=")
+
+bind :: Source.Expr' -> IParser (Source.Expr -> Source.Expr)
+bind b =
   Indent.withPos $
     do  arg <- Pattern.term
         padded leftArrow
         body@(A.A ann _) <- expr
-        return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann $ E.rawVar ">>=") body) (A.A ann $ E.Lambda arg e))
+        return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann b) body) (A.A ann $ E.Lambda arg e))
+
+bindThen :: Source.Expr' -> IParser (Source.Expr -> Source.Expr)
+bindThen b =
+  Indent.withPos $
+    do  body@(A.A ann _) <- expr
+        return $ \e -> (A.A ann $ E.App (A.A ann $ E.App (A.A ann b) body) (A.A ann $ E.Lambda (A.A ann $ P.Var "_") e))
+
 
 -- LET
 
